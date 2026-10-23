@@ -1,6 +1,5 @@
 # refreshome.fr — site statique (remplace WordPress). Hostinger / LiteSpeed.
 DirectoryIndex index.html
-ErrorDocument 404 /404/index.html
 Options -Indexes
 
 RewriteEngine On

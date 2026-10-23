@@ -16,9 +16,12 @@ $TEST  = isset($_GET['test']) && $_GET['test'] === '1';
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { http_response_code(405); header('Content-Type: text/plain; charset=UTF-8'); echo 'Méthode non autorisée.'; exit; }
 if (!empty($_POST['_honey'])) { header('Location: ' . $THANKS, true, 303); exit; }
 
-function v($keys){ foreach((array)$keys as $k){ if(isset($_POST[$k]) && trim((string)$_POST[$k])!=='') return trim(strip_tags((string)$_POST[$k])); } return ''; }
+function v($keys){ foreach((array)$keys as $k){ $k2=str_replace([' ','.'],'_',$k);
+  foreach([$k,$k2] as $kk){ if(!isset($_POST[$kk])) continue; $x=$_POST[$kk];
+    if(is_array($x)) $x=implode(', ', array_map(function($i){return trim(strip_tags((string)$i));}, $x));
+    if(trim((string)$x)!=='') return trim(strip_tags((string)$x)); } } return ''; }
 $nom=v(['Nom','nom']); $tel=v(['Téléphone','T%C3%A9l%C3%A9phone','telephone']); $email=v(['Email','email']);
-$ville=v(['Localité','ville']); $besoin=v(['Besoin','besoin']); $delai=v(['Délai','delai']); $org=v(['Entreprise']);
+$ville=v(['Code postal','Localité','ville']); $besoin=v(['Besoin','besoin']); $delai=v(['Délai','delai']); $org=v(['Entreprise']);
 $msg=v(['Message','message']); $src=v(['Source']);
 
 if ($nom==='' || $tel==='' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -58,7 +61,7 @@ $body  = ($TEST ? "*** TEST TECHNIQUE, à ignorer ***\n\n" : '');
 $body .= "Nouvelle demande depuis refreshome.fr\n\n";
 $body .= "Nom        : $nom\n";
 if ($org !== '') $body .= "Entreprise : $org\n";
-$body .= "Téléphone  : $tel\nE-mail     : $email\nLocalité   : $ville\nPrestation : $besoin\nDélai      : $delai\nPage       : $src\n";
+$body .= "Téléphone  : $tel\nE-mail     : $email\nCode postal: $ville\nPrestation : $besoin\nDélai      : $delai\nPage       : $src\n";
 $body .= "Photos     : " . count($files) . "\n\nMessage :\n" . ($msg !== '' ? $msg : '(vide)') . "\n";
 
 $headers  = "From: $FROM\r\nReply-To: =?UTF-8?B?" . base64_encode($nom) . "?= <$email>\r\n";
