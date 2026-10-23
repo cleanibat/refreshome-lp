@@ -200,6 +200,9 @@
     var s = d.createElement('script'); s.src = 'https://cdn.trustindex.io/loader.js?ver=1'; s.defer = true; d.body.appendChild(s);
   }, '600px 0px').observe(ti.parentNode);
 
+  /* 8 bis. Police du formulaire (Inter) chargée après la page */
+  window.addEventListener('load', function () { html.classList.add('rh-ready'); });
+
   /* 9. Formulaire : prestation pré-cochée via ?service=, libellé des photos */
   var f = d.getElementById('devisForm');
   if (f) {

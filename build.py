@@ -191,6 +191,11 @@ def clean_page(html, path, form_html, title=None, desc=None, robots='index, foll
     for i in soup.select('i.fa-plus'): i.replace_with(BeautifulSoup(PLUS, 'html.parser'))
     for i in soup.select('i.fa-minus'): i.replace_with(BeautifulSoup(MINUS, 'html.parser'))
     for a in soup.select('a.uc_trigger[href^="javascript"]'): a['href'] = '#'
+    # --- images hors du premier écran : chargement différé (le premier écran = bloc d'accroche 45b21ac + en-tête)
+    hero = soup.select_one('[data-id="45b21ac"]')
+    for img in soup.select('main img, footer img'):
+        if hero and hero in img.parents: continue
+        img['loading'] = 'lazy'; img['decoding'] = 'async'; img.attrs.pop('fetchpriority', None)
     # --- états posés par le JS Blocksy/Elementor au chargement
     CUR = {'current-menu-item', 'current_page_item', 'current-menu-ancestor', 'current-menu-parent'}
     for li in soup.select('li.menu-item'):
@@ -230,7 +235,8 @@ def clean_page(html, path, form_html, title=None, desc=None, robots='index, foll
            if GTM_ID else '<!-- GTM : renseigner GTM_ID dans build.py -->')
     hero_pre = ''
     if path == '' or path in SERVICE_PATHS:
-        hero_pre = f'<link rel="preload" as="image" href="{root}assets/uploads/2025/05/Hero-photo-min.webp" fetchpriority="high">'
+        hero_pre = (f'<link rel="preload" as="image" href="{root}assets/uploads/2025/05/Hero-photo-min.webp" media="(min-width: 768px)" fetchpriority="high">'
+                    f'<link rel="preload" as="image" href="{root}assets/uploads/2025/05/Hero-photo-min-mobile.webp" media="(max-width: 767px)" fetchpriority="high">')
     head_html = f'''<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{title or t}</title>
 <meta name="description" content="{desc or ''}">
@@ -291,6 +297,9 @@ if __name__ == '__main__':
     css = build_css(list(raw.values()), FORM_CSS)
     purge_css()
     convert_assets()
+    # photo d'accroche allégée pour mobile (affichée sous un voile sombre à 60 %)
+    im = Image.open(os.path.join(A_SRC, 'uploads/2025/05/Hero-photo-min.jpg')).convert('RGB')
+    im.resize((1100, round(im.height * 1100 / im.width)), Image.LANCZOS).save(os.path.join(A_OUT, 'uploads/2025/05/Hero-photo-min-mobile.webp'), 'WEBP', quality=66, method=6)
     shutil.copy2(os.path.join(A_SRC, 'uploads/trustindex-google-widget.css'), os.path.join(A_OUT, 'trustindex-google-widget.css'))
     urls = [DOMAIN + '/'] + [DOMAIN + '/' + p for p in sorted(SERVICE_PATHS)]
     open(os.path.join(OUT, 'sitemap.xml'), 'w').write('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'

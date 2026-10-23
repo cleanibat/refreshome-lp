@@ -31,8 +31,10 @@ FORM_HTML = form_html()
 
 FORM_CSS = '''
 @font-face{font-family:Inter;src:url(fonts/inter-latin.woff2) format("woff2");font-weight:400 700;font-display:swap}
-.rh-form{font-family:Inter,"Inter Fallback",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#37352f;font-size:16px;line-height:1.15;text-align:left;padding:0 2px 2px}
+.rh-form{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#37352f;font-size:16px;line-height:1.15;text-align:left;padding:0 2px 2px}
+.rh-ready .rh-form{font-family:Inter,"Inter Fallback",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 .rh-form *{box-sizing:border-box}
+@media (max-width:767px){.elementor-14 .elementor-element.elementor-element-45b21ac:not(.elementor-motion-effects-element-type-background){background-image:url(uploads/2025/05/Hero-photo-min-mobile.webp)}}
 .rh-field{margin:0 0 28px;border:0;padding:0;min-width:0}
 .rh-label{display:flex;align-items:center;font-size:18px;font-weight:600;line-height:22.5px;color:#37352f;margin:0 0 12px;padding:0}
 .rh-req{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;margin-left:6px;border-radius:50%;background:rgba(55,53,47,.09);font-size:12px;font-weight:700;line-height:1;padding-top:4px}
