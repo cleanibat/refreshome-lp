@@ -37,21 +37,23 @@ def asset_for(url):
         return re.sub(r'\.(jpe?g|png)$', '.webp', name, flags=re.I)
     return name
 
+BG_IMAGES = ('Hero-photo', 'Hero-background', 'Hero-bottom', 'Lights-blue')
+
 def convert_assets():
     for name in sorted(used_assets):
         src = os.path.join(A_SRC, name)
         if not os.path.exists(src): continue
         if re.search(r'\.(jpe?g|png)$', name, re.I) and 'favicon' not in name:
             dst = os.path.join(A_OUT, re.sub(r'\.(jpe?g|png)$', '.webp', name, flags=re.I))
-            if os.path.exists(dst) and os.path.getmtime(dst) > os.path.getmtime(src): continue
             os.makedirs(os.path.dirname(dst), exist_ok=True)
             im = Image.open(src)
             if im.mode in ('P', 'LA', 'RGBA') or 'transparency' in im.info:
-                im = im.convert('RGBA'); im.save(dst, 'WEBP', quality=85, method=6)
+                im = im.convert('RGBA'); im.save(dst, 'WEBP', quality=72 if im.width > 600 else 88, method=6, alpha_quality=60 if im.width > 600 else 90)
             else:
                 im = im.convert('RGB')
-                if im.width > 2000: im = im.resize((2000, round(im.height * 2000 / im.width)), Image.LANCZOS)
-                im.save(dst, 'WEBP', quality=78, method=6)
+                cap = 1920 if any(k in name for k in BG_IMAGES) else 960
+                if im.width > cap: im = im.resize((cap, round(im.height * cap / im.width)), Image.LANCZOS)
+                im.save(dst, 'WEBP', quality=74, method=6)
         else:
             dst = os.path.join(A_OUT, name)
             os.makedirs(os.path.dirname(dst), exist_ok=True)
@@ -197,6 +199,11 @@ def clean_page(html, path, form_html, title=None, desc=None, robots='index, foll
     for n in soup.select('nav[data-responsive]'): n['data-responsive'] = 'yes'
     # --- URLs
     for tag in soup.find_all(True):
+        if tag.name == 'img' and tag.has_attr('srcset') and 'wp-content/uploads' in tag.get('src', ''):
+            src0 = tag['src']
+            if re.search(r'-\d+x\d+\.(jpe?g|png)$', src0):  # vignette WordPress -> image d'origine
+                src0 = re.sub(r'-\d+x\d+(\.(jpe?g|png))$', r'\1', src0)
+            tag['src'] = fix_url(src0, path); del tag['srcset']; tag.attrs.pop('sizes', None)
         for attr in ('href', 'src', 'data-src', 'poster'):
             if tag.has_attr(attr) and isinstance(tag[attr], str):
                 if attr == 'data-src' and 'trustindex' in tag[attr]: continue
@@ -239,12 +246,18 @@ def clean_page(html, path, form_html, title=None, desc=None, robots='index, foll
     head.append(BeautifulSoup(head_html, 'html.parser'))
     if GTM_ID:
         soup.body.insert(0, BeautifulSoup(f'<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={GTM_ID}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>', 'html.parser'))
-    soup.body.append(BeautifulSoup(f'<script src="{root}assets/swiper.min.js" defer></script><script src="{root}assets/site.js?v={VERSION}" defer></script>', 'html.parser'))
+    soup.body.append(BeautifulSoup(f'<script>{INLINE_JS}</script><script src="{root}assets/site.js?v={VERSION}" defer></script><script src="{root}assets/swiper.min.js" defer></script>', 'html.parser'))
     if soup.html.has_attr('class'): del soup.html['class']
     soup.html['lang'] = 'fr-FR'
     return soup
 
 SERVICE_PATHS = set()
+# Animations d'entrée Elementor : lancées dès que le HTML est lu, comme le faisait Elementor (sans attendre les autres scripts)
+INLINE_JS = ("!function(){var a=document.querySelectorAll('.elementor-invisible[data-settings]');if(!a.length)return;"
+  "var go=function(e){var s={};try{s=JSON.parse(e.getAttribute('data-settings'))}catch(x){}var n=s._animation||s.animation;"
+  "if(!n){e.classList.remove('elementor-invisible');return}setTimeout(function(){e.classList.remove('elementor-invisible');e.classList.add('animated',n)},parseInt(s._animation_delay||s.animation_delay||0,10))};"
+  "if(!('IntersectionObserver'in window)){a.forEach(go);return}var o=new IntersectionObserver(function(es){es.forEach(function(x){if(x.isIntersecting){o.unobserve(x.target);go(x.target)}})});"
+  "a.forEach(function(e){e.setAttribute('data-anim','1');o.observe(e)})}();")
 VERSION = datetime.datetime.now().strftime('%Y%m%d%H%M')
 
 def write(soup, path):
@@ -260,6 +273,8 @@ if __name__ == '__main__':
     from services import build_services, nav_patch, FORM_HTML, FORM_CSS, PAGE_META
     pages = {'': 'index', 'confirmation/': 'confirmation', 'mentions-legales/': 'mentions-legales',
              'politique-de-confidentialite/': 'politique-de-confidentialite'}
+    for d in ('uploads', 'themes', 'plugins', 'assets'):
+        shutil.rmtree(os.path.join(A_OUT, d), ignore_errors=True)
     raw = {p: open(os.path.join(SRC, f + '.html')).read() for p, f in pages.items()}
     SERVICE_PATHS.update(build_services.paths())
     soups = {}

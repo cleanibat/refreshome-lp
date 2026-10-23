@@ -24,7 +24,7 @@
       el.classList.add('animated', name);
     }, delay);
   });
-  $$('.elementor-invisible').forEach(function (el) {
+  $$('.elementor-invisible:not([data-anim])').forEach(function (el) {
     var s = settings(el);
     if (s._animation || s.animation) anim.observe(el); else el.classList.remove('elementor-invisible');
   });
