@@ -4,8 +4,10 @@ name: Déploiement SSH (rsync)
 # Secrets à créer sur le dépôt : SSH_HOST, SSH_PORT, SSH_USER, SSH_KEY (clé privée), SSH_KNOWN_HOSTS (ssh-keyscan), SSH_TARGET_DIR (docroot, finit par /), SITE_URL
 
 on:
-  push:
-    branches: [main]
+  # Déclenchement manuel tant que la bascule de refreshome.fr (WordPress → statique) n'est pas faite.
+  # Après bascule : réactiver push sur main.
+  # push:
+  #   branches: [main]
   workflow_dispatch:
 
 concurrency:
@@ -27,7 +29,7 @@ jobs:
         run: |
           rsync -az --delete \
             -e "ssh -i ~/.ssh/deploy_key -p ${{ secrets.SSH_PORT }}" \
-            --exclude '.git' --exclude '.github' --exclude 'build.py' \
+            --exclude '.git' --exclude '.github' --exclude 'build.py' --exclude 'content.py' --exclude 'src_img' --exclude '__pycache__' \
             --exclude 'README.md' --exclude '.nojekyll' --exclude '.DS_Store' \
             ./ ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.SSH_TARGET_DIR }}
       - name: Vérifier la mise en ligne
