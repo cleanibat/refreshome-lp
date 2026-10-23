@@ -276,7 +276,8 @@ def write(soup, path):
 
 # ------------------------------------------------------------------ main
 if __name__ == '__main__':
-    from services import build_services, nav_patch, FORM_HTML, FORM_CSS, PAGE_META
+    from services import build_services, nav_patch, FORM_HTML, FORM_CSS, PAGE_META, pexels_assets
+    pexels_assets(ROOT)
     pages = {'': 'index', 'confirmation/': 'confirmation', 'mentions-legales/': 'mentions-legales',
              'politique-de-confidentialite/': 'politique-de-confidentialite'}
     for d in ('uploads', 'themes', 'plugins', 'assets'):

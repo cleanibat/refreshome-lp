@@ -190,6 +190,36 @@ SERVICES = {
 
 CARD_IDS = ['c5365dd', '54f226c', '529c28c', 'b079cec']
 
+# Photos Pexels (licence Pexels : usage commercial libre, sans attribution obligatoire) — pexels.com/photo/<id>
+PEXELS = {
+    'traitement-charpente': dict(hero=15456627, cards=[31763537, 37703280, 33497725, 31763540]),
+    'gouttieres': dict(hero=12343741, cards=[34006744, 36608489, 17316266, 20113440]),
+    'renovation-faitiere': dict(hero=39246453, cards=[31763534, 18349121, 37623622, 31763541]),
+    'cache-moineaux': dict(hero=20638743, cards=[40016697, 15662219, 8732947, 17314421]),
+    'peinture-facade': dict(hero=12741270, cards=[16734519, 5196259, 34975633, 31608472]),
+    'peinture-isolante': dict(hero=37490738, cards=[39238335, 38781390, 13548818, 18610792]),
+    'nettoyage-professionnel': dict(hero=14965464, cards=[9716297, 18596325, 27667817, 11911826]),
+}
+
+def pexels_assets(root_dir):
+    """Télécharge (une fois, dans source/pexels/) et convertit en WebP les photos Pexels des pages services."""
+    import os, urllib.request
+    from PIL import Image
+    src_dir = os.path.join(root_dir, 'source', 'pexels'); out_dir = os.path.join(root_dir, 'assets', 'pexels')
+    os.makedirs(src_dir, exist_ok=True); os.makedirs(out_dir, exist_ok=True)
+    jobs = [(p['hero'], 1920) for p in PEXELS.values()] + [(i, 960) for p in PEXELS.values() for i in p['cards']]
+    for pid, w in jobs:
+        f = os.path.join(src_dir, f'{pid}.jpg')
+        if not os.path.exists(f):
+            url = f'https://images.pexels.com/photos/{pid}/pexels-photo-{pid}.jpeg?auto=compress&cs=tinysrgb&w=2000'
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            open(f, 'wb').write(urllib.request.urlopen(req, timeout=60).read())
+        im = Image.open(f).convert('RGB')
+        variants = [(f'{pid}.webp', w, 74)] + ([(f'{pid}-m.webp', 1100, 66)] if w > 960 else [])
+        for name, cap, q in variants:
+            c = im.resize((cap, round(im.height * cap / im.width)), Image.LANCZOS) if im.width > cap else im
+            c.save(os.path.join(out_dir, name), 'WEBP', quality=q, method=6)
+
 def _set_html(el, html):
     el.clear(); el.append(BeautifulSoup(html, 'html.parser'))
 
@@ -204,11 +234,12 @@ def build_services(home_html, clean_page, form):
         _set_html(q('780c72a').select_one('.elementor-widget-container'), f'<p>{s["lead"]}</p>')
         # --- section services : 4 cartes au gabarit d'origine
         h = s['h2']; _set_html(q('9a1ef3a').select_one('h2'), f'{h[0]}<b>{h[1]}</b>{h[2]}')
-        for cid, card, ph in zip(CARD_IDS, s['cards'], s['photos']):
+        px = PEXELS[slug]
+        for cid, card, ph in zip(CARD_IDS, s['cards'], px['cards']):
             c = q(cid); title, tags, bullets, tip = card
             c['id'] = 'service-' + slug if cid == CARD_IDS[0] else c.get('id')
             img = c.select('img')[0]
-            img['src'] = P[ph]; img['alt'] = f'{title} – Refreshome'
+            img['src'] = f'https://refreshome.fr/assets/pexels/{ph}.webp'; img['alt'] = f'{title} – Refreshome'
             for a in ('srcset', 'sizes', 'width', 'height', 'fetchpriority'): img.attrs.pop(a, None)
             img['loading'] = 'lazy'
             icon = c.select('img')[1]; icon['src'] = ICON[s['icon']]
@@ -238,8 +269,15 @@ def build_services(home_html, clean_page, form):
             if n == 0: cont['style'] = 'display:block'
             else: cont.attrs.pop('style', None)
             acc.append(b)
+        hero_css = ('.elementor-14 .elementor-element.elementor-element-45b21ac:not(.elementor-motion-effects-element-type-background)'
+                    f'{{background-image:url(../assets/pexels/{px["hero"]}.webp)}}'
+                    '@media (max-width:767px){.elementor-14 .elementor-element.elementor-element-45b21ac:not(.elementor-motion-effects-element-type-background)'
+                    f'{{background-image:url(../assets/pexels/{px["hero"]}-m.webp)}}}}')
         cleaned = clean_page(str(soup), slug + '/', form.replace('value="' + s['choice'] + '"', 'value="' + s['choice'] + '" checked'),
                              title=s['title'], desc=s['desc'])
+        cleaned.head.append(BeautifulSoup(f'<style>{hero_css}</style>', 'html.parser'))
+        for l in cleaned.head.select('link[as="image"]'):
+            l['href'] = f'../assets/pexels/{px["hero"]}' + ('-m.webp' if '767' in l.get('media', '') else '.webp')
         out[slug + '/'] = cleaned
     return out
 build_services.paths = lambda: [k + '/' for k in SERVICES]

@@ -34,6 +34,9 @@ Nécessite : Python 3 + `pip3 install beautifulsoup4 lxml pillow fonttools brotl
 4. GTM : `GTM_ID` dans `build.py`, importer le conteneur (conversion Ads existante `AW-17623850704 / ohQNCNuR7v8cENC92tNB`, pixel Meta `952469813385770`).
 5. Test du formulaire, `check_site.sh https://refreshome.fr/`, sitemap dans Search Console.
 
+## Photos des pages services
+Photos Pexels (licence Pexels : usage commercial libre, attribution non obligatoire), choisies par service : bandeau + 4 cartes, liste dans `PEXELS` (`services.py`, identifiants pexels.com/photo/<id>). Téléchargées une fois dans `source/pexels/`, converties en WebP dans `assets/pexels/`. Pour changer une photo : remplacer l'identifiant et relancer `python3 build.py`. Idéalement, les remplacer à terme par des photos de chantiers Refreshome.
+
 ## À valider par le client
-- Textes des 7 nouvelles pages ; photos : ce sont celles de l'ancien site (toitures, façades), à remplacer par des photos de chantier de chaque service.
+- Textes des 7 nouvelles pages.
 - Téléphone (37 dans les mentions, 38 dans la politique de confidentialité) et forme juridique (auto-entreprise / SASU).
