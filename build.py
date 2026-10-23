@@ -86,7 +86,7 @@ def dims(name, w):
 
 def picture(p, name, alt, sizes='(max-width: 700px) 100vw, 560px', eager=False, cls=''):
     w, h = dims(name, 960)
-    srcset = f'{p.root}img/{name}-560.webp 560w, {p.root}img/{name}-960.webp 960w'
+    srcset = f'{p.root}img/{name}-560.webp 560w, {p.root}img/{name}-720.webp 720w, {p.root}img/{name}-960.webp 960w'
     load = 'fetchpriority="high"' if eager else 'loading="lazy" decoding="async"'
     return (f'<img class="{cls}" src="{p.root}img/{name}-960.webp" srcset="{srcset}" sizes="{sizes}" '
             f'width="{w}" height="{h}" alt="{E(alt)}" {load}>')
@@ -94,7 +94,7 @@ def picture(p, name, alt, sizes='(max-width: 700px) 100vw, 560px', eager=False, 
 # ---------------------------------------------------------------- CSS (inline : une requête de moins)
 CSS = r"""
 @font-face{font-family:Jakarta;src:url(ROOTfonts/jakarta.woff2) format('woff2');font-weight:400 800;font-display:swap}
-:root{--navy:#14226b;--blue:#1379c2;--sky:#70d8ff;--bg:#f3f8fc;--ink:#0f1a3d;--muted:#56627f;--line:#e2eaf4;--orange:#f66014;--orange-d:#d94e08;--r:18px;--sh:0 10px 30px -12px rgba(20,34,107,.25)}
+:root{--navy:#14226b;--blue:#0f6cb0;--sky:#70d8ff;--bg:#f3f8fc;--ink:#0f1a3d;--muted:#56627f;--line:#e2eaf4;--orange:#cf4a0c;--orange-d:#b23f08;--r:18px;--sh:0 10px 30px -12px rgba(20,34,107,.25)}
 *{box-sizing:border-box;margin:0}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{font:16px/1.6 Jakarta,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased}
@@ -115,7 +115,7 @@ em{font-style:normal;background:linear-gradient(90deg,var(--blue),#27a6e8);-webk
 .ic{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:15px 26px;border-radius:999px;font-weight:700;text-decoration:none;border:0;cursor:pointer;font:inherit;font-weight:700;transition:transform .15s,background .15s,box-shadow .15s}
 .btn:hover{transform:translateY(-1px)}
-.btn-o{background:var(--orange);color:#fff;box-shadow:0 10px 24px -10px rgba(246,96,20,.7)}
+.btn-o{background:var(--orange);color:#fff;box-shadow:0 10px 24px -10px rgba(207,74,12,.6)}
 .btn-o:hover{background:var(--orange-d)}
 .btn-w{background:#fff;color:var(--navy);box-shadow:inset 0 0 0 2px var(--line)}
 .btn-w:hover{box-shadow:inset 0 0 0 2px var(--blue)}
@@ -297,7 +297,7 @@ form .note{font-size:.78rem;color:var(--muted);text-align:center}
 /* pied */
 .foot{background:#0c1545;color:#c9d3ee;padding:56px 0 100px;font-size:.93rem}
 .foot .cols{display:grid;grid-template-columns:1.3fr 1fr 1fr 1fr;gap:28px}
-.foot h4{color:#fff;font-size:.95rem;margin-bottom:12px}
+.foot .fh{font-weight:700;color:#fff;font-size:.95rem;margin-bottom:12px}
 .foot ul{list-style:none;padding:0;display:grid;gap:7px}
 .foot a{text-decoration:none}.foot a:hover{color:#fff}
 .foot .logo img{height:40px;margin-bottom:14px}
@@ -364,7 +364,7 @@ def header(p):
         cols += f'<div><b>{label}</b>{links}</div>'
     home = p.link('')
     return f'''<header class="top"><div class="wrap">
-<a class="logo" href="{home}" aria-label="Refreshome, accueil"><img src="{p.root}img/logo-refreshome.webp" width="360" height="91" alt="Refreshome nettoyage"></a>
+<a class="logo" href="{home}" aria-label="Refreshome, accueil"><img src="{p.root}img/logo-refreshome.webp" width="200" height="51" alt="Refreshome nettoyage"></a>
 <button class="burger" aria-label="Menu" aria-expanded="false" aria-controls="nav">{p.i('menu')}</button>
 <nav class="nav" id="nav" aria-label="Navigation principale">
 <div class="dd"><button type="button" aria-haspopup="true">Services</button><div class="mega">{cols}</div></div>
@@ -376,11 +376,11 @@ def header(p):
 def footer(p):
     cols = ''
     for g, label, items in services_by_group():
-        cols += f'<div><h4>{label}</h4><ul>' + ''.join(f'<li><a href="{p.link(k)}">{E(v["nav"])}</a></li>' for k, v in items) + '</ul></div>'
+        cols += f'<div><p class="fh">{label}</p><ul>' + ''.join(f'<li><a href="{p.link(k)}">{E(v["nav"])}</a></li>' for k, v in items) + '</ul></div>'
     home = p.link('')
     return f'''<footer class="foot"><div class="wrap">
 <div class="cols">
-<div><a class="logo" href="{home}"><img src="{p.root}img/logo-refreshome-light.webp" width="360" height="92" alt="Refreshome nettoyage" loading="lazy"></a>
+<div><a class="logo" href="{home}"><img src="{p.root}img/logo-refreshome-light.webp" width="200" height="51" alt="Refreshome nettoyage" loading="lazy"></a>
 <p>Nettoyage extérieur, entretien de toiture et peinture pour particuliers et professionnels.</p>
 <ul style="margin-top:14px"><li><a href="tel:{SITE['tel']}">{SITE['phone']}</a></li><li><a href="mailto:{SITE['email']}">{SITE['email']}</a></li><li>{SITE['street']}, {SITE['zip']} {SITE['city']}</li></ul>
 <div class="soc"><a href="{SITE['instagram']}" rel="noopener" target="_blank" aria-label="Instagram">{p.i('insta')}</a><a href="{SITE['facebook']}" rel="noopener" target="_blank" aria-label="Facebook">{p.i('fb')}</a></div></div>
@@ -496,7 +496,7 @@ def page(p, title, desc, body, schema=(), robots='index, follow', preload=None):
     pre = ''
     if preload:
         pre = (f'<link rel="preload" as="image" href="{p.root}img/{preload}-960.webp" '
-               f'imagesrcset="{p.root}img/{preload}-560.webp 560w, {p.root}img/{preload}-960.webp 960w" imagesizes="(max-width: 860px) 100vw, 560px" fetchpriority="high">')
+               f'imagesrcset="{p.root}img/{preload}-560.webp 560w, {p.root}img/{preload}-720.webp 720w, {p.root}img/{preload}-960.webp 960w" imagesizes="(max-width: 860px) 100vw, 560px" fetchpriority="high">')
     hdr = header(p); ftr = footer(p)  # avant sprite : collecte des icônes
     doc = f'''<!doctype html>
 <html lang="fr"><head>
