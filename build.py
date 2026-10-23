@@ -212,7 +212,7 @@ em{font-style:normal;background:linear-gradient(90deg,var(--blue),#27a6e8);-webk
 .svc p{color:var(--muted);font-size:.93rem}
 .svc .go{margin-top:auto;padding-top:8px;color:var(--blue);font-weight:700;font-size:.9rem;display:flex;gap:6px;align-items:center}
 .svc .go .ic{width:16px;height:16px}
-.svc .new{align-self:flex-start;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--orange);background:#fff1e9;padding:3px 9px;border-radius:999px}
+.svc .new{align-self:flex-start;font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:#a63a06;background:#fff1e9;padding:3px 9px;border-radius:999px}
 /* galerie */
 .gal{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .gal img{border-radius:16px;aspect-ratio:1/1;object-fit:cover;width:100%}
